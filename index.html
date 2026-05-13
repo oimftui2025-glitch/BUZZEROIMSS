@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUZZER - OIM Survey</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body { 
+            background: #050505; color: white; font-family: 'Segoe UI', sans-serif; 
+            margin: 0; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; height: 100vh; overflow: hidden; touch-action: manipulation;
+        }
+        .setup-container { text-align: center; background: #112240; padding: 30px; border-radius: 10px; border: 2px solid #00e5ff; width: 80%; max-width: 300px; }
+        input, select { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #555; font-size: 1.2rem; box-sizing: border-box; text-align: center; }
+        button.connect-btn { background: #0288d1; color: white; padding: 15px; border: none; border-radius: 5px; width: 100%; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
+        
+        .buzzer-container { display: none; text-align: center; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center;}
+        .big-buzzer { 
+            width: 80vw; height: 80vw; max-width: 300px; max-height: 300px;
+            border-radius: 50%; border: none; font-size: 3rem; font-weight: bold; 
+            color: white; box-shadow: 0 15px 0 #900, 0 20px 20px rgba(0,0,0,0.5); 
+            transition: 0.1s; cursor: pointer; background: #f00; -webkit-tap-highlight-color: transparent;
+        }
+        .big-buzzer:active { transform: translateY(15px); box-shadow: 0 0 0 #900, 0 5px 10px rgba(0,0,0,0.5); }
+        
+        /* Warna Tombol Buzzer */
+        .big-buzzer.teamA { background: #e74c3c; box-shadow: 0 15px 0 #c0392b; }
+        .big-buzzer.teamB { background: #3498db; box-shadow: 0 15px 0 #2980b9; }
+        
+        #status-msg { margin-top: 20px; font-size: 1.2rem; font-weight: bold; color: #00e5ff; }
+    </style>
+</head>
+<body>
+
+    <div class="setup-container" id="setup-screen">
+        <h2 style="color: #f1c40f; margin-top:0;">OIM BUZZER</h2>
+        <input type="text" id="roomIdInput" placeholder="Masukkan Room ID" autocomplete="off" style="text-transform: uppercase;">
+        <select id="teamSelect">
+            <option value="A">Kapten TIM A</option>
+            <option value="B">Kapten TIM B</option>
+        </select>
+        <button class="connect-btn" onclick="connectToHost()">CONNECT</button>
+        <p id="error-msg" style="color: #e74c3c; margin-bottom: 0;"></p>
+    </div>
+
+    <div class="buzzer-container" id="buzzer-screen">
+        <h1 id="team-display" style="margin-bottom: 40px; font-size: 2.5rem; letter-spacing: 2px;">TIM X</h1>
+        <button class="big-buzzer" id="buzzBtn" onclick="sendBuzz()">BUZZ!</button>
+        <p id="status-msg">Terkoneksi ke Host 🟢</p>
+    </div>
+
+    <script>
+        let peer = new Peer();
+        let conn;
+        let myTeam = '';
+
+        function connectToHost() {
+            // Ubah ID yang diinput jadi huruf besar semua
+            const hostId = document.getElementById('roomIdInput').value.trim().toUpperCase();
+            myTeam = document.getElementById('teamSelect').value;
+            
+            if(!hostId) {
+                document.getElementById('error-msg').innerText = "Isi Room ID dulu!";
+                return;
+            }
+
+            document.getElementById('error-msg').innerText = "Menghubungkan...";
+            
+            // Konek ke Laptop
+            conn = peer.connect(hostId);
+
+            conn.on('open', () => {
+                document.getElementById('setup-screen').style.display = 'none';
+                document.getElementById('buzzer-screen').style.display = 'flex';
+                
+                const teamName = "TIM " + myTeam;
+                document.getElementById('team-display').innerText = teamName;
+                document.getElementById('team-display').style.color = myTeam === 'A' ? '#e74c3c' : '#3498db';
+                document.getElementById('buzzBtn').className = `big-buzzer team${myTeam}`;
+            });
+
+            conn.on('error', (err) => {
+                document.getElementById('error-msg').innerText = "Gagal nyambung! Cek ID.";
+            });
+        }
+
+        // Fungsi mencet buzzer
+        function sendBuzz() {
+            if(conn && conn.open) {
+                // Kirim data ke laptop
+                conn.send({ action: 'buzz', team: myTeam });
+                
+                // Kalo HP support getar, geter dikit pas dipencet
+                if(navigator.vibrate) navigator.vibrate(100); 
+            }
+        }
+    </script>
+</body>
+</html>
