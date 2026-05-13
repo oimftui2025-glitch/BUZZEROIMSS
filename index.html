@@ -23,11 +23,8 @@
             transition: 0.1s; cursor: pointer; background: #f00; -webkit-tap-highlight-color: transparent;
         }
         .big-buzzer:active { transform: translateY(15px); box-shadow: 0 0 0 #900, 0 5px 10px rgba(0,0,0,0.5); }
-        
-        /* Warna Tombol Buzzer */
         .big-buzzer.teamA { background: #e74c3c; box-shadow: 0 15px 0 #c0392b; }
         .big-buzzer.teamB { background: #3498db; box-shadow: 0 15px 0 #2980b9; }
-        
         #status-msg { margin-top: 20px; font-size: 1.2rem; font-weight: bold; color: #00e5ff; }
     </style>
 </head>
@@ -56,7 +53,6 @@
         let myTeam = '';
 
         function connectToHost() {
-            // Ubah ID yang diinput jadi huruf besar semua
             const hostId = document.getElementById('roomIdInput').value.trim().toUpperCase();
             myTeam = document.getElementById('teamSelect').value;
             
@@ -66,8 +62,6 @@
             }
 
             document.getElementById('error-msg').innerText = "Menghubungkan...";
-            
-            // Konek ke Laptop
             conn = peer.connect(hostId);
 
             conn.on('open', () => {
@@ -85,13 +79,9 @@
             });
         }
 
-        // Fungsi mencet buzzer
         function sendBuzz() {
             if(conn && conn.open) {
-                // Kirim data ke laptop
                 conn.send({ action: 'buzz', team: myTeam });
-                
-                // Kalo HP support getar, geter dikit pas dipencet
                 if(navigator.vibrate) navigator.vibrate(100); 
             }
         }
