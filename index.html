@@ -82,7 +82,16 @@
                     document.getElementById('buzzBtn').className = `big-buzzer team${myTeam}`;
                     document.getElementById('status-msg').innerText = "Terkoneksi ke Host 🟢";
                     document.getElementById('status-msg').style.color = "#00e5ff";
-                });
+                });// Pake server STUN Google biar koneksi WebRTC HP bisa nembus firewall/jaringan ribet
+            peer = new Peer({
+                config: {
+                    'iceServers': [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
+                    ]
+                }
+            });
 
                 conn.on('close', () => {
                     document.getElementById('status-msg').innerText = "Terputus dari Host 🔴";
